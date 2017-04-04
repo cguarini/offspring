@@ -1,7 +1,7 @@
 /** queue.h
 **  outlines a priority queue structure and functions
 **  author: cdg6285 Chris Guarini
-**  modified for use in offspring.c
+**  for use in offspring.c
 **/
 
 ///Node - For linked list implementation of queue
@@ -44,3 +44,8 @@ queue * init_queue(void);
 ///Returns the amount of items in the queue
 ///@param : q - Queue to inspect
 int queue_size(queue * q);
+
+///queue_priority
+///Returns the priority of the last item in the queue
+///Which is the lowest priority, but highest number
+int queue_priority(queue * q);

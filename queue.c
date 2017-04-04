@@ -124,7 +124,19 @@ int queue_size(queue * q){
 }
 
 
+///queue_priority
+///Returns the priority of the last element in the queue
+///@param : q - queue on which to find out lowest priority
+///returns null if queue is empty
+int queue_priority(queue * q){
+  //Check if queue is empty
+  if(!q->itemsInQueue){
+    return 0x00;
+  }
+  //Items are in queue, return back's priority
+  return q->back->priority;
 
+}
 
 
 

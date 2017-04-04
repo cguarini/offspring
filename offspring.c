@@ -25,7 +25,7 @@ size_t strlen(const char *str);
 //NTree_S implementation for N-ary tree structure
 typedef
 struct NTree {
-  const char * name;    //Name of the person
+  char * name;    //Name of the person
   struct NTree * children; //collection of children
   size_t child_count;  //Current number of children
   size_t capacity;    //Capacity of children collection
@@ -105,12 +105,12 @@ NTree* find(NTree * tree, char name[]){
 ///        child  - Name of the child
 NTree *  insert_child(NTree *  tree, char parent[], char child[]){
  //Copy the names into new addresses
- char *  parent_cpy = malloc(strlen(parent));
  char *  child_cpy = malloc(strlen(child));
- strcpy(parent_cpy,parent);
  strcpy(child_cpy,child);
  //check if tree is empty
  if(!tree){
+    char * parent_cpy = malloc(strlen(parent));
+    strcpy(parent_cpy,parent);
     //If tree is empty, initialize tree with parent as the root
     tree = malloc(sizeof(NTree));
     //Set root's name to parent's name
@@ -143,6 +143,7 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
     birth->capacity = 0;//Can't hold any children
   }
   p->children[p->child_count-1] = * birth;//Add child to parent's list of children
+  free(birth);
  }
  return tree;
  //END OF INSERT_CHILD
@@ -197,6 +198,71 @@ void print_tree(NTree * tree){
   destroy_queue(q);
 }
 
+///tree_size
+///Returns the amount of nodes in the tree by
+///using queue_tree function
+///@param : tree - the tree to find the size of.
+int tree_size(NTree * tree){
+  //Create the queue that is used by queue_tree
+  queue * q = init_queue();
+  //Get the tree in queue form
+  queue_tree(tree,q,0);
+  
+  //return the sizse of the queue
+  int size = queue_size(q);//get the size of the queue
+  destroy_queue(q);//free the queue's memory
+  return size;
+}
+
+///tree_height
+///uses queue_tree to determine the height of the tree
+///@param : tree - tree in which to inspect
+int tree_height(NTree * tree){
+  //Create the queue
+  queue * q = init_queue();
+  //put tree into queue
+  queue_tree(tree,q,0);
+  //get priority of last node in queue
+  int height = queue_priority(q);
+  //destroy the queue
+  destroy_queue(q);
+  return height;//return height of tree
+}
+
+///scrub_node
+///Destroys the members of the tree node given to the function
+///@param : n - the node of the tree to be destroyed
+void scrub_node(NTree * n){
+  //Frees all malloced parts of the node
+  free(n->name);
+}
+
+
+///destroy_tree
+///Uses queue_tree to destroy the entire tree
+///one node at a time with the help of scrub_node
+///@param : tree - the tree to destroy
+void destroy_tree(NTree * tree){
+  //create a queue for queue_tree
+  queue * q = init_queue();
+  //enqueue the entire tree to be destroyed
+  queue_tree(tree,q,0);
+
+  //empty the queue, destroying each node in the tree
+  while(queue_size(q)){//while elements in queue
+    NTree * n = dequeue(q);//get next in line to kill
+    scrub_node(n);//kill the malloced parts
+    //free the memory of that node
+    free(n);
+  }
+  //destroy the queue
+  destroy_queue(q);
+  //END OF DESTROY_TREE
+}
+
+
+
+
 ///main() Takes an optional argument to read a file,
 ///Otherwise will loop through waiting for commands
 ///To create a family tree.
@@ -238,6 +304,25 @@ int main(int argc, char * argv[]){
     //Check if command is print
     if(!strcmp(command,"print")){
       print_tree(tree);
+    }
+
+    //Check if command is size
+    if(!strcmp(command,"size")){
+      //print the size of the tree
+      printf("%d\n",tree_size(tree));
+    }
+
+    //Check if command is height
+    if(!strcmp(command,"height")){
+      //print the height of the tree
+      printf("%d\n",tree_height(tree)+1);
+    }
+
+    //Check if command is quit
+    if(!strcmp(command,"quit")){
+      //Destroy the tree and exit the program
+      destroy_tree(tree);
+      return EXIT_SUCCESS;
     }
   }
 }
