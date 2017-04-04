@@ -8,6 +8,7 @@
 //libraries
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 //headers
 #include "trimit.h"
 #include "queue.h"
@@ -18,12 +19,14 @@
 int strcmp(const char *str1, const char *str2);
 void *realloc(void *ptr, size_t size);
 char * strtok(char * str, const char * delimiters);
+char *strcpy(char *dest, const char *src);
+size_t strlen(const char *str);
 
 //NTree_S implementation for N-ary tree structure
 typedef
 struct NTree {
   const char * name;    //Name of the person
-  struct NTree ** children; //collection of children
+  struct NTree * children; //collection of children
   size_t child_count;  //Current number of children
   size_t capacity;    //Capacity of children collection
 } NTree;              //NTree is an alias for the struct
@@ -76,7 +79,8 @@ NTree* find(NTree * tree, char name[]){
   int qsize = queue_size(q);
   for(int i=0; i<qsize; i++){
     NTree * temp = dequeue(q);
-    if(strcmp(temp->name,name)){
+    int debug = strcmp(temp->name,name);
+    if(!strcmp(temp->name,name)){
       //Return first instance of the name (oldest ancestor)
       pointer = temp;
       break;
@@ -100,12 +104,17 @@ NTree* find(NTree * tree, char name[]){
 ///        parent - Name of the parent 
 ///        child  - Name of the child
 NTree *  insert_child(NTree *  tree, char parent[], char child[]){
- //Check if tree is empty
+ //Copy the names into new addresses
+ char *  parent_cpy = malloc(strlen(parent));
+ char *  child_cpy = malloc(strlen(child));
+ strcpy(parent_cpy,parent);
+ strcpy(child_cpy,child);
+ //check if tree is empty
  if(!tree){
     //If tree is empty, initialize tree with parent as the root
     tree = malloc(sizeof(NTree));
     //Set root's name to parent's name
-    tree->name = parent;
+    tree->name = parent_cpy;
     //set root to childless
     tree->children = NULL;
     tree->child_count = 0;
@@ -122,18 +131,18 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
   //Add a child
   p->child_count++;
   //reallocate memory to account for new child
-  p->children = realloc(tree->children,(sizeof(NTree)*(tree->child_count)));
+  p->children = realloc(p->children,(sizeof(NTree)*(p->child_count)));
   p->capacity++;//might be useful later, who knows?
 
   //Add the child to the list of children
   NTree * birth = malloc(sizeof(NTree));//a new node is born
   if(birth){//malloc delivered the child
-    birth->name = child;//name the child
+    birth->name = child_cpy;//name the child
     birth->children = NULL;//no children
     birth->child_count = 0;//not a single one
     birth->capacity = 0;//Can't hold any children
   }
-  p->children[p->child_count] = * birth;//Add child to parent's list of children
+  p->children[p->child_count-1] = * birth;//Add child to parent's list of children
  }
  return tree;
  //END OF INSERT_CHILD
@@ -150,7 +159,7 @@ void print_tree(NTree * tree){
   queue_tree(tree,q,0);//put the tree into queue form
    
   while(queue_size(q)){//while items are in the queue
-    //Go through queue, printing the person's name and the children they had
+    //Go through queue, printing the person's name and the childre they had
     NTree * p = dequeue(q);//Current parent
     printf("%s had ",p->name);//Print the parent's name
     
@@ -191,7 +200,6 @@ void print_tree(NTree * tree){
 ///main() Takes an optional argument to read a file,
 ///Otherwise will loop through waiting for commands
 ///To create a family tree.
-/*
 int main(int argc, char * argv[]){
   NTree * tree = NULL;
   //Command loop
@@ -203,21 +211,26 @@ int main(int argc, char * argv[]){
     fgets(input, MAX_INPUT, stdin);
     
     //Check what the command is
-    char * command;
-    command = strtok(input," ,");
-    command = trim(command);
+    char command[MAX_INPUT];
+    strcpy(command , strtok(input," ,"));
+    strcpy(command , trim(command));
     
     //Check if command is add
     if(!strcmp(command,"add")){
       //Retrieve arguments
       
       //parent argument
-      char * parent = strtok(NULL," ,");
-      parent = trim(parent);
+      char parent[MAX_INPUT];
+      strcpy(parent , strtok(NULL," ,"));
+      strcpy(parent , trim(parent));
       //child argument
-      char * child = strtok(NULL," ,");
-      child = trim(child);
+      char child[MAX_INPUT];
+      strcpy(child , strtok(NULL," ,"));
+      strcpy(child , trim(child));
       
+      //DEBUG INPUTS///////////////////////////////
+      //printf("add %s %s\n",parent,child);
+
       //Run insert_child on those arguments
       tree = insert_child(tree,parent,child);
     }
@@ -228,16 +241,18 @@ int main(int argc, char * argv[]){
     }
   }
 }
-*/
 
+/* TEST FUNCTION
 int main(void){
   NTree * tree = NULL;
   tree = insert_child(tree,"Chris","Kevin");
+  tree = insert_child(tree,"Chris","Yoda");
+  tree = insert_child(tree,"Yoda","Luke");
+  print_tree(tree);
   printf("%s\n",tree->name);
-  printf("%s\n",tree->children[0]->name);
+  printf("%s\n",tree->children[0].name);
 }
-
-
+*/
 
 
 
