@@ -90,6 +90,7 @@ NTree* find(NTree * tree, char name[]){
   //Destroy the queue
   destroy_queue(q);
 
+  
   //Return pointer to NTree object if name is found
   //otherwise return null
   return pointer;
@@ -282,6 +283,9 @@ int tree_size(NTree * tree){
 ///uses queue_tree to determine the height of the tree
 ///@param : tree - tree in which to inspect
 int tree_height(NTree * tree){
+  if(!tree){
+    return 0;
+  }
   //Create the queue
   queue * q = init_queue();
   //put tree into queue
@@ -290,7 +294,7 @@ int tree_height(NTree * tree){
   int height = queue_priority(q);
   //destroy the queue
   destroy_queue(q);
-  return height;//return height of tree
+  return height+1;//return height of tree
 }
 
 ///scrub_node
@@ -379,11 +383,11 @@ int main(int argc, char * argv[]){
       //Retrieve arguments
       
       //parent argument
-      char * parent = strtok(NULL," ,");
+      char * parent = strtok(NULL,",");
       if(parent){//Check if passed parent argument
           strcpy(parent , trim(parent));
           //child argument
-          char * child = strtok(NULL," ,");
+          char * child = strtok(NULL,",");
           if(child){//Check if passed child argument
           strcpy(child , trim(child));
       
@@ -395,11 +399,11 @@ int main(int argc, char * argv[]){
       
           }
           else{
-            fprintf(stderr,"add parent_name child_name");
+            fprintf(stderr,"add parent_name child_name\n");
           }
       }
       else{
-        fprintf(stderr,"add parent_name child_name");
+        fprintf(stderr,"add parent_name child_name\n");
       }
     }
 
@@ -407,12 +411,18 @@ int main(int argc, char * argv[]){
     if(!strcmp(command,"print")){
       //Check if optional argument is there
       char * name;
-      name = strtok(NULL, " ,");
+      name = strtok(NULL, ",");
       
-      if(name){
+      if(name){//name exists
         strcpy(name, trim(name));
-        print_tree(find(tree,name));
+        if(find(tree,name)){//name in tree
+          print_tree(find(tree,name));
+        }
+        else{//name not in tree
+          fprintf(stderr, "Unable to find %s in tree.\n", name);
+        }
       }
+      //otherwise print entire tree
       else{
         print_tree(tree);
       }
@@ -422,24 +432,56 @@ int main(int argc, char * argv[]){
     if(!strcmp(command,"find")){
       //Check for arguments
       char * name;
-      name = strtok(NULL, " ,");
+      name = strtok(NULL, ",");
       if(name){
         strcpy(name, trim(name));
-        print_person(find(tree,name));
+        if(find(tree,name)){//name in tree
+          print_person(find(tree,name));
+        }
+        else{//Can't find name
+          fprintf(stderr, "Unable to find %s in tree.\n", name);
+        }
       }
     }
 
     //Check if command is size
     if(!strcmp(command,"size")){
       //print the size of the tree
-      printf("%d\n",tree_size(tree));
+      char * name = strtok(NULL, ",");
+      if(name){//Check for optional argument
+        strcpy(name,trim(name));
+        if(find(tree,name)){
+          printf("%d\n",tree_size(find(tree,name)));
+        }
+        else{
+          fprintf(stderr, "Unable to find %s in tree.\n", name);
+        }
+      }
+      //Otherwise perform on whole tree
+      else{
+        printf("%d\n",tree_size(tree));
+      }
     }
 
     //Check if command is height
     if(!strcmp(command,"height")){
       //print the height of the tree
-      printf("%d\n",tree_height(tree)+1);
+      char * name = strtok(NULL, ",");
+      if(name){//check for optional argument
+        strcpy(name,trim(name));//trim whitespace
+        if(find(tree,name)){//name in tree
+          printf("%d\n",tree_height(find(tree,name)));
+        }
+        else{//name not in tree
+          fprintf(stderr, "Unable to find %s in tree.\n", name);
+        }
+      }
+      //Otherwise perform on whole tree
+      else{
+        printf("%d\n",tree_height(tree));
+      }
     }
+    
 
     //Check if command is quit
     if(!strcmp(command,"quit")){
@@ -453,6 +495,19 @@ int main(int argc, char * argv[]){
       //Destroy the tree and reinitialize tree pointer
       destroy_tree(tree);
       tree=NULL;
+    }
+
+    //Check if command is help
+    if(!strcmp(command,"help")){
+      //Print information of valid commands
+      printf("add parent-name, child-name # create a parent-child relation.\n"
+          "find   [name] # find and print the name and its children list.\n"
+          "print  [name] # print a breadth first traversal of all the offspring from named person down.\n"
+          "size   [name] # print the size of all members in the [sub]tree.\n"
+          "height [name] # print the height of [sub]tree\n"
+          "init # delete the current tree and start with an empty tree.\n"
+          "help # print information on valid commands.\n"
+          "quit # delete current tree and exit.\n");
     }
   }
 }
