@@ -119,8 +119,10 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
     //root can hold no children
     tree->capacity = 0;
  }
+
+ if(child){//Check if child exists
  //Continue with adding child
- 
+  
   //Use find function to search for the parent
   NTree * p = find(tree, parent);
   //Check if parent was found
@@ -157,12 +159,18 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
       strcpy(p_cpy,parent);
       p->name=p_cpy;
       //add root to list of children
-      p->children[0] = tree;
       p->child_count = 1;
+      p->children = realloc(p->children,(sizeof(tree)*(p->child_count)));
+      p->children[0] = tree;
       p->capacity = 1;
       return p;
     }
   }
+  else{
+    fprintf(stderr,"Unable to add %s, %s not found in tree.\n",child,parent);
+    free(p);
+  }
+ }
  return tree;
  //END OF INSERT_CHILD
  //END OF BIRTH PUNS
@@ -325,6 +333,34 @@ void destroy_tree(NTree * tree){
 ///To create a family tree.
 int main(int argc, char * argv[]){
   NTree * tree = NULL;
+  
+  //Read from file
+  if(argc > 1){//If argument is present
+    FILE * fp;
+    fp = fopen(argv[1],"r");
+    char finput[MAX_INPUT];
+    //Read file line by line
+    while(EOF != fscanf(fp,"%100[^\n]\n", finput)){
+      char * parent;
+      parent = strtok(finput,",");
+      if(parent){//Parent is on this line
+        tree = insert_child(tree,parent,NULL);
+        char * child = strtok(NULL,",");
+        while(child){//Add children to parent
+          strcpy(child,trim(child));//trim whitespace
+          tree = insert_child(tree,parent,child);//insert child
+          child = strtok(NULL,",");//move on to next child
+        }
+      }
+      //Read next line
+    }
+    //Close file
+    fclose(fp);
+  }
+  
+  //After file read, allow for terminal use
+
+
   //Command loop
   while(1){
     //Get command from terminal
@@ -332,7 +368,7 @@ int main(int argc, char * argv[]){
     input[0]=0x00;
     //Get input
     fgets(input, MAX_INPUT, stdin);
-    
+        
     //Check what the command is
     char command[MAX_INPUT];
     strcpy(command , strtok(input," ,"));
@@ -343,19 +379,28 @@ int main(int argc, char * argv[]){
       //Retrieve arguments
       
       //parent argument
-      char parent[MAX_INPUT];
-      strcpy(parent , strtok(NULL," ,"));
-      strcpy(parent , trim(parent));
-      //child argument
-      char child[MAX_INPUT];
-      strcpy(child , strtok(NULL," ,"));
-      strcpy(child , trim(child));
+      char * parent = strtok(NULL," ,");
+      if(parent){//Check if passed parent argument
+          strcpy(parent , trim(parent));
+          //child argument
+          char * child = strtok(NULL," ,");
+          if(child){//Check if passed child argument
+          strcpy(child , trim(child));
       
-      //DEBUG INPUTS///////////////////////////////
-      //printf("add %s %s\n",parent,child);
+          //DEBUG INPUTS///////////////////////////////
+          //printf("add %s %s\n",parent,child);
 
-      //Run insert_child on those arguments
-      tree = insert_child(tree,parent,child);
+          //Run insert_child on those arguments
+          tree = insert_child(tree,parent,child);
+      
+          }
+          else{
+            fprintf(stderr,"add parent_name child_name");
+          }
+      }
+      else{
+        fprintf(stderr,"add parent_name child_name");
+      }
     }
 
     //Check if command is print
