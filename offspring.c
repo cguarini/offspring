@@ -216,6 +216,44 @@ void print_tree(NTree * tree){
   destroy_queue(q);
 }
 
+///print_person
+///prints the current node and their children
+///@param : p - The node in which to print
+void print_person(NTree * p){
+  //Print the person's name
+  printf("%s had ",p->name);
+  
+  //Print the person's offspring
+  if(p->child_count){//If the person has children, print their names
+    for(int i=0; i< p->child_count; i++){
+      //Formatting code
+      
+      //Has only 1 child
+      if(p->child_count == 1){
+        printf("%s. \n",p->children[i]->name);
+      }
+
+      //Has more than one child
+      else if(i == p->child_count-1){//Last child
+        printf(" and %s.\n",p->children[i]->name);//Print last child's name
+      }
+      else if(i==0){
+        printf("%s",p->children[i]->name);//Print first child's name
+      }
+      else{//Middle child
+        printf(", %s",p->children[i]->name);//Print middle child's name
+      }
+
+    }
+  }
+  //Person has no children
+  else{
+    printf("no offspring.\n");
+  }
+}
+
+
+
 ///tree_size
 ///Returns the amount of nodes in the tree by
 ///using queue_tree function
@@ -322,7 +360,28 @@ int main(int argc, char * argv[]){
 
     //Check if command is print
     if(!strcmp(command,"print")){
-      print_tree(tree);
+      //Check if optional argument is there
+      char * name;
+      name = strtok(NULL, " ,");
+      
+      if(name){
+        strcpy(name, trim(name));
+        print_tree(find(tree,name));
+      }
+      else{
+        print_tree(tree);
+      }
+    }
+
+    //Check if command is find
+    if(!strcmp(command,"find")){
+      //Check for arguments
+      char * name;
+      name = strtok(NULL, " ,");
+      if(name){
+        strcpy(name, trim(name));
+        print_person(find(tree,name));
+      }
     }
 
     //Check if command is size
