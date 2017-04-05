@@ -87,6 +87,7 @@ void* dequeue(queue* q){
     if(q->itemsInQueue == 1){//Only 1 item in queue
       //Set queue to empty
       q->back = NULL;
+      q->front = NULL;
     }
     q->itemsInQueue--;
 
@@ -102,6 +103,41 @@ void* dequeue(queue* q){
   }
   //END OF DEQUEUE
 }
+
+///rev_dequeue
+///Dequeues the object from the back of the queue, returns NULL if queue is
+///empty
+///@param : q -queue onto which to perform the operation
+void * rev_dequeue(queue * q){
+  //get the node at the back of the queue
+  node * n = q->back;
+  if(q->itemsInQueue){//Queue wasn't empty
+    //point the back of the queue to next in line
+    if(q->itemsInQueue == 1){//Only 1 item in queue
+      //set queue to empty
+      q->back = NULL;
+      q->front = NULL;
+    }
+    q->itemsInQueue--;
+    //set q->back to the new back of queue
+    node * temp = q->front;
+    for(int i=0; i<q->itemsInQueue; i++){
+      temp = temp->next;
+    }
+    q->back = temp;
+
+    //retrieve data from the node
+    void * data = n->data;
+    //delete the node
+    free(n);
+    //return the data;
+    return data;
+  }
+  else{//queue is empty
+    return NULL;
+  }
+}
+
 
 ///destroy_queue
 ///Destroys the queue by dequeueing all elements and freeing the queue struct

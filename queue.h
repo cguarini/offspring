@@ -31,6 +31,13 @@ void enqueue(queue* q, void* data, int priority);
 ///@param : q- queue onto which the queue will be performed
 void* dequeue(queue* q);
 
+///rev_dequeue
+///Dequeues an element from the back of the queue, returns NULL if the queue is
+///empty
+///@param : q - queue in which to operate with
+void* rev_dequeue(queue* q);
+
+
 ///destroy_queue
 ///Destroys the queue by dequeueing all elements and freeing the queue struct
 ///@param : q - the queue to destroy

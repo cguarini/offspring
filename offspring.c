@@ -26,7 +26,7 @@ size_t strlen(const char *str);
 typedef
 struct NTree {
   char * name;    //Name of the person
-  struct NTree * children; //collection of children
+  struct NTree * * children; //collection of children
   size_t child_count;  //Current number of children
   size_t capacity;    //Capacity of children collection
 } NTree;              //NTree is an alias for the struct
@@ -58,7 +58,7 @@ void queue_tree(NTree * tree, queue * q, int priority){
     //Recursively queue all of nodes children
     //Priority corresponds to level on the family tree
     //0 is highest
-    queue_tree(&tree->children[i],q,priority+1);
+    queue_tree(tree->children[i],q,priority+1);
   }
 }
 
@@ -104,12 +104,10 @@ NTree* find(NTree * tree, char name[]){
 ///        parent - Name of the parent 
 ///        child  - Name of the child
 NTree *  insert_child(NTree *  tree, char parent[], char child[]){
- //Copy the names into new addresses
- char *  child_cpy = malloc(strlen(child));
- strcpy(child_cpy,child);
+ 
  //check if tree is empty
  if(!tree){
-    char * parent_cpy = malloc(strlen(parent));
+    char * parent_cpy = malloc(strlen(parent)+1);
     strcpy(parent_cpy,parent);
     //If tree is empty, initialize tree with parent as the root
     tree = malloc(sizeof(NTree));
@@ -122,29 +120,49 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
     tree->capacity = 0;
  }
  //Continue with adding child
-  
- //Use find function to search for the parent
- NTree * p = find(tree, parent);
- //Check if parent was found
- if(p){
- //Parent is found
-  //Add a child
-  p->child_count++;
-  //reallocate memory to account for new child
-  p->children = realloc(p->children,(sizeof(NTree)*(p->child_count)));
-  p->capacity++;//might be useful later, who knows?
+ 
+  //Use find function to search for the parent
+  NTree * p = find(tree, parent);
+  //Check if parent was found
+  if(p){
+    //Parent is found
+    //copy names into new addresses
+    char * child_cpy = malloc(strlen(child)+1);
+    strcpy(child_cpy,child);
+    //Add a child
+    p->child_count++;
+    //reallocate memory to account for new child
+    p->children = realloc(p->children,(sizeof(NTree)*(p->child_count)));
+    p->capacity++;//might be useful later, who knows?
 
-  //Add the child to the list of children
-  NTree * birth = malloc(sizeof(NTree));//a new node is born
-  if(birth){//malloc delivered the child
-    birth->name = child_cpy;//name the child
-    birth->children = NULL;//no children
-    birth->child_count = 0;//not a single one
-    birth->capacity = 0;//Can't hold any children
+    //Add the child to the list of children
+    NTree * birth = malloc(sizeof(NTree));//a new node is born
+    if(birth){//malloc delivered the child
+      birth->name = child_cpy;//name the child
+      birth->children = NULL;//no children
+      birth->child_count = 0;//not a single one
+      birth->capacity = 0;//Can't hold any children
+    }
+    p->children[p->child_count-1] = birth;//Add child to parent's list of children
+    //free(birth);
   }
-  p->children[p->child_count-1] = * birth;//Add child to parent's list of children
-  free(birth);
- }
+
+  //Parent not found in tree, check if child is root.
+  else if(!strcmp(tree->name,child)){
+    //set parent as new root, and add child to children list
+    NTree * p = malloc(sizeof(NTree));
+    if(p){//malloc worked
+      //copy name into new pointer
+      char * p_cpy = malloc(strlen(parent)+1);
+      strcpy(p_cpy,parent);
+      p->name=p_cpy;
+      //add root to list of children
+      p->children[0] = tree;
+      p->child_count = 1;
+      p->capacity = 1;
+      return p;
+    }
+  }
  return tree;
  //END OF INSERT_CHILD
  //END OF BIRTH PUNS
@@ -171,20 +189,20 @@ void print_tree(NTree * tree){
         
         //Has only 1 child
         if(p->child_count == 1){
-          printf("%s.\n",p->children[i].name);
+          printf("%s.\n",p->children[i]->name);
         }
 
         //Has more than one child
 
         else if(i == p->child_count-1){//Last child
-          printf(" and %s.\n",p->children[i].name);//Print last child's name
+          printf(" and %s.\n",p->children[i]->name);//Print last child's name
         }
         
         else if(i == 0){
-          printf("%s",p->children[i].name);//Print first child's name
+          printf("%s",p->children[i]->name);//Print first child's name
         }
         else{//Middle child
-          printf(", %s",p->children[i].name);//Print middle child's name
+          printf(", %s",p->children[i]->name);//Print middle child's name
         }
       }
     }
@@ -235,6 +253,7 @@ int tree_height(NTree * tree){
 void scrub_node(NTree * n){
   //Frees all malloced parts of the node
   free(n->name);
+  free(n->children);
 }
 
 
@@ -323,6 +342,13 @@ int main(int argc, char * argv[]){
       //Destroy the tree and exit the program
       destroy_tree(tree);
       return EXIT_SUCCESS;
+    }
+
+    //Check if command is init
+    if(!strcmp(command,"init")){
+      //Destroy the tree and reinitialize tree pointer
+      destroy_tree(tree);
+      tree=NULL;
     }
   }
 }
