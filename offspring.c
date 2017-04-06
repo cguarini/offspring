@@ -468,7 +468,7 @@ int main(int argc, char * argv[]){
       }
       //Otherwise perform on whole tree
       else{
-        printf("%d\n",tree_size(tree));
+        printf("size: %d\n",tree_size(tree));
       }
     }
 
@@ -487,7 +487,7 @@ int main(int argc, char * argv[]){
       }
       //Otherwise perform on whole tree
       else{
-        printf("%d\n",tree_height(tree));
+        printf("height: %d\n",tree_height(tree));
       }
     }
     
