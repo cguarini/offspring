@@ -129,6 +129,14 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
   //Check if parent was found
   if(p){
     //Parent is found
+
+    //check if child is in children list
+    for(int i=0; i < p->child_count; i++){
+      //check all of the children
+      if(!strcmp(child,p->children[i]->name)){//child's name is found
+        return tree;//return
+      }
+    }
     //copy names into new addresses
     char * child_cpy = malloc(strlen(child)+1);
     strcpy(child_cpy,child);
@@ -161,7 +169,7 @@ NTree *  insert_child(NTree *  tree, char parent[], char child[]){
       p->name=p_cpy;
       //add root to list of children
       p->child_count = 1;
-      p->children = realloc(p->children,(sizeof(tree)*(p->child_count)));
+      p->children = malloc((sizeof(tree)*(p->child_count)));
       p->children[0] = tree;
       p->capacity = 1;
       return p;
@@ -367,6 +375,7 @@ int main(int argc, char * argv[]){
 
   //Command loop
   while(1){
+    printf(" offspring> ");
     //Get command from terminal
     char input[MAX_INPUT];
     input[0]=0x00;
@@ -451,7 +460,7 @@ int main(int argc, char * argv[]){
       if(name){//Check for optional argument
         strcpy(name,trim(name));
         if(find(tree,name)){
-          printf("%d\n",tree_size(find(tree,name)));
+          printf("size: %d\n",tree_size(find(tree,name)));
         }
         else{
           fprintf(stderr, "Unable to find %s in tree.\n", name);
@@ -470,7 +479,7 @@ int main(int argc, char * argv[]){
       if(name){//check for optional argument
         strcpy(name,trim(name));//trim whitespace
         if(find(tree,name)){//name in tree
-          printf("%d\n",tree_height(find(tree,name)));
+          printf("height: %d\n",tree_height(find(tree,name)));
         }
         else{//name not in tree
           fprintf(stderr, "Unable to find %s in tree.\n", name);
@@ -487,6 +496,7 @@ int main(int argc, char * argv[]){
     if(!strcmp(command,"quit")){
       //Destroy the tree and exit the program
       destroy_tree(tree);
+      printf("\n");
       return EXIT_SUCCESS;
     }
 
@@ -500,7 +510,8 @@ int main(int argc, char * argv[]){
     //Check if command is help
     if(!strcmp(command,"help")){
       //Print information of valid commands
-      printf("add parent-name, child-name # create a parent-child relation.\n"
+      printf("User commands for offspring:\n"
+          "add parent-name, child-name # create a parent-child relation.\n"
           "find   [name] # find and print the name and its children list.\n"
           "print  [name] # print a breadth first traversal of all the offspring from named person down.\n"
           "size   [name] # print the size of all members in the [sub]tree.\n"
